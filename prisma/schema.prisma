@@ -1,0 +1,30 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// Eliminar output   = "../generated/prisma"
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+// Modelo Usuario que representa los usuarios registrados en el sistema
+// Contiene información básica del usuario y detalles de autenticación
+model Usuario {
+  id                Int      @id @default(autoincrement())
+  email             String
+  nombre            String
+  telefono          String?
+  tipo_usuario      String
+  esta_activo       Boolean     @default(true)
+  fecha_creacion    DateTime    @default(now())
+  fecha_actualizacion DateTime?
+}
+
