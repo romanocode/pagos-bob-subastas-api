@@ -15,16 +15,54 @@ datasource db {
 }
 
 
-// Modelo Usuario que representa los usuarios registrados en el sistema
-// Contiene información básica del usuario y detalles de autenticación
-model Usuario {
-  id                Int      @id @default(autoincrement())
-  email             String
-  nombre            String
-  telefono          String?
-  tipo_usuario      String
-  esta_activo       Boolean     @default(true)
-  fecha_creacion    DateTime    @default(now())
-  fecha_actualizacion DateTime?
+model Clientes {
+  idCliente         Int      @id @default(autoincrement())
+  correo            String
+  nombreCompleto    String
+  tipDocumento     String
+  numDocumento     String
+  numCelular       String
+  saldoTotalDolar  Decimal    @default(0)
+  dtFacRuc         String
+  dtFacRazonSocial String
+  estado           Boolean
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime?
+  canceledAt       DateTime?
+}
+
+model Garantias {
+  idGarantia        Int      @id @default(autoincrement())
+  idCliente         Int
+  tipo              String
+  placaVehiculo     String
+  empresaVehiculo   String
+  fechaSubasta      DateTime
+  moneda            String
+  montoGarantia     Decimal
+  banco             String
+  numCuentaDeposito String
+  docAdjunto        String
+  comentarios       String?
+  estado            String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime?
+  validatedAt       DateTime?
+  canceledAt        DateTime?
+}
+
+model Reembolsos{
+  idReembolso       Int      @id @default(autoincrement())
+  idCliente         Int
+  montoReembolso    Decimal
+  banco             String
+  numCuentaDeposito String
+  docAdjunto        String?
+  comentarios       String?
+  estado            String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime?
+  validatedAt       DateTime?
+  canceledAt        DateTime?
 }
 

@@ -1,10 +1,20 @@
 import express from "express";
-import { userRoutes } from './routes/userRoutes.js';
+import cors from "cors";
+import clienteRoutes from './routes/clienteRoutes.js';
+import garantiaRoutes from './routes/garantiaRoutes.js';
+import reembolsoRoutes from './routes/reembolsoRoutes.js';
 
 //Crear la aplicación
 const app = express();
 //Definir el puerto
 const port = 3000;
+
+// Configurar CORS
+app.use(cors({
+  origin: 'http://localhost:5173',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type',"Authorization"]
+}));
 
 //Configurar Express para entender JSON
 app.use(express.json());
@@ -17,9 +27,12 @@ app.get('/', (req, res) => {
 });
 
 
-
-//Usar las rutas de usuarios
-app.use('/api/users', userRoutes);
+//Usar las rutas de clientes
+app.use('/api/clientes', clienteRoutes);
+//Usar las rutas de garantías
+app.use('/api/garantias', garantiaRoutes);
+//Usar las rutas de reembolsos
+app.use('/api/reembolsos', reembolsoRoutes);
 
 //Iniciar el servidor
 app.listen(port, () => {
