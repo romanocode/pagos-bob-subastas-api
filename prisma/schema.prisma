@@ -15,16 +15,129 @@ datasource db {
 }
 
 
-// Modelo Usuario que representa los usuarios registrados en el sistema
-// Contiene información básica del usuario y detalles de autenticación
-model Usuario {
-  id                Int      @id @default(autoincrement())
-  email             String
-  nombre            String
-  telefono          String?
-  tipo_usuario      String
-  esta_activo       Boolean     @default(true)
-  fecha_creacion    DateTime    @default(now())
-  fecha_actualizacion DateTime?
+model Clientes {
+  idCliente         Int      @id @default(autoincrement())
+  correo            String
+  nombreCompleto    String
+  tipDocumento     String
+  numDocumento     String
+  numCelular       String
+  saldoTotalDolar  Decimal    @default(0)
+  dtFacRuc         String
+  dtFacRazonSocial String
+  estado           Boolean
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime?
+  canceledAt       DateTime?
+
+  // Relaciones
+  garantias        Garantias[]
+  reembolsos       Reembolsos[]
+  facturaciones    Facturacion[]
 }
 
+model Garantias {
+  idGarantia        Int      @id @default(autoincrement())
+  idSubasta         Int
+  subasta           Subastas @relation(fields: [idSubasta], references: [idSubasta])
+  idCliente         Int
+  cliente           Clientes @relation(fields: [idCliente], references: [idCliente])
+
+  concepto          ConceptoGarantia
+  fechaExpiracion   DateTime?
+  tipo              String
+  moneda            String    @default("Dolar $")
+  montoGarantia     Decimal
+  banco             Banco
+  numCuentaDeposito String
+  docAdjunto        String?
+  comentarios       String?
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime?
+  validatedAt       DateTime?
+  invalidAt         DateTime?
+  revokedAt         DateTime?
+
+  @@index([idSubasta])
+  @@index([idCliente])
+}
+
+model Reembolsos{
+  idReembolso       Int      @id @default(autoincrement())
+  idCliente         Int
+  cliente           Clientes @relation(fields: [idCliente], references: [idCliente])
+  montoReembolso    Decimal
+  banco             String
+  numCuentaDeposito String
+  docAdjunto        String?
+  comentarios       String?
+  estado            String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime?
+  validatedAt       DateTime?
+  revokedAt         DateTime?
+
+  @@index([idCliente])
+}
+
+
+/// Enum para el concepto de facturación
+enum ConceptoFacturacion {
+  PENALIDAD
+  FACTURACION
+}
+
+/// Modelo Facturacion para registrar facturas y penalidades
+model Facturacion {
+  idFacturacion      Int                   @id @default(autoincrement())
+  idCliente          Int
+  cliente            Clientes              @relation(fields: [idCliente], references: [idCliente])
+  idSubasta          Int
+  subasta            Subastas              @relation(fields: [idSubasta], references: [idSubasta])
+  monto              Decimal
+  numCuentaDeposito  String
+  docAdjunto         String?
+  concepto           ConceptoFacturacion
+  comentario         String?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime?
+  validatedAt        DateTime?
+  revokedAt          DateTime?
+
+  @@index([idCliente])
+  @@index([idSubasta])
+}
+
+/// Enum para concepto de garantía
+enum ConceptoGarantia {
+  GANADOR1
+  GANADOR2
+  GANADOR3
+}
+
+/// Enum para bancos
+enum Banco {
+  BCP
+  INTERBANK
+  OTROS
+}
+
+/// Modelo Subastas que representa cada evento de subasta
+model Subastas {
+  idSubasta       Int       @id @default(autoincrement())
+  titulo          String
+  placaVehiculo   String
+  empresa         String
+  fecha           DateTime
+  moneda          String    @default("Dolar $")
+  monto           Decimal
+  descripcion     String
+  estado          String
+  createdAt       DateTime  @default(now())
+  closedAt        DateTime?
+
+  // Relaciones
+  garantias       Garantias[]
+  facturaciones   Facturacion[]
+}
