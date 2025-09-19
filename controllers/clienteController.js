@@ -126,7 +126,7 @@ export const createCliente = async (req, res) => {
                 saldoTotalDolar: saldoTotalDolar ? parseFloat(saldoTotalDolar) : 0,
                 dtFacRuc,
                 dtFacRazonSocial,
-                estado: estado !== undefined ? estado : true,
+                activo: estado !== undefined ? estado : true,
                 createdAt: new Date()
             }
         });
@@ -225,7 +225,7 @@ export const updateCliente = async (req, res) => {
                 ...(saldoTotalDolar !== undefined && { saldoTotalDolar: parseFloat(saldoTotalDolar) }),
                 ...(dtFacRuc && { dtFacRuc }),
                 ...(dtFacRazonSocial && { dtFacRazonSocial }),
-                ...(estado !== undefined && { estado }),
+                ...(estado !== undefined && { activo: estado }),
                 updatedAt: new Date()
             }
         });

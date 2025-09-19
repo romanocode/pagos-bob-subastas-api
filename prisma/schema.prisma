@@ -15,6 +15,22 @@ datasource db {
 }
 
 
+model Subastas{
+  idSubasta     Int      @id @default(autoincrement())
+  titulo        String
+  imgSubasta    String?
+  placaVehiculo String
+  empresa       String
+  fecha         DateTime
+  moneda        String
+  monto         Decimal
+  descripcion   String?
+  estado        String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime?
+  canceledAt    DateTime?
+}
+
 model Clientes {
   idCliente         Int      @id @default(autoincrement())
   correo            String
@@ -25,7 +41,7 @@ model Clientes {
   saldoTotalDolar  Decimal    @default(0)
   dtFacRuc         String
   dtFacRazonSocial String
-  estado           Boolean
+  activo           Boolean    @default(true)
   createdAt        DateTime    @default(now())
   updatedAt        DateTime?
   canceledAt       DateTime?
@@ -33,36 +49,53 @@ model Clientes {
 
 model Garantias {
   idGarantia        Int      @id @default(autoincrement())
+  idSubasta         Int
   idCliente         Int
-  tipo              String
-  placaVehiculo     String
-  empresaVehiculo   String
+  concepto          String
   fechaSubasta      DateTime
+  fechaExpiracion   DateTime
+  tipo              String
   moneda            String
   montoGarantia     Decimal
   banco             String
   numCuentaDeposito String
   docAdjunto        String
   comentarios       String?
-  estado            String
   createdAt         DateTime @default(now())
   updatedAt         DateTime?
+  paidAt            DateTime?
   validatedAt       DateTime?
-  canceledAt        DateTime?
+  invalidatedAt     DateTime?
+  revokedAt         DateTime?
 }
 
 model Reembolsos{
   idReembolso       Int      @id @default(autoincrement())
   idCliente         Int
-  montoReembolso    Decimal
+  monto             Decimal
   banco             String
   numCuentaDeposito String
   docAdjunto        String?
   comentarios       String?
-  estado            String
   createdAt         DateTime @default(now())
   updatedAt         DateTime?
   validatedAt       DateTime?
-  canceledAt        DateTime?
+  revokedAt         DateTime?
+}
+
+model Facturacion{
+  idFacturacion     Int      @id @default(autoincrement())
+  idCliente         Int
+  idSubasta         Int
+  monto             Decimal
+  banco             String
+  numCuentaDeposito String
+  docAdjunto        String?
+  concepto          String
+  comentarios       String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime?
+  validatedAt       DateTime?
+  revokedAt         DateTime?
 }
 

@@ -76,19 +76,18 @@ export const createReembolso = async (req, res) => {
     try {
         const { 
             idCliente,
-            montoReembolso,
+            monto,
             banco,
             numCuentaDeposito,
             docAdjunto,
-            comentarios,
-            estado
+            comentarios
         } = req.body;
         
         // Validaciones básicas
-        if (!idCliente || !montoReembolso || !banco || !numCuentaDeposito) {
+        if (!idCliente || !monto || !banco || !numCuentaDeposito) {
             return res.status(400).json({
                 success: false,
-                message: 'Los campos idCliente, montoReembolso, banco y numCuentaDeposito son obligatorios'
+                message: 'Los campos idCliente, monto, banco y numCuentaDeposito son obligatorios'
             });
         }
         
@@ -117,12 +116,11 @@ export const createReembolso = async (req, res) => {
         const newReembolso = await prisma.reembolsos.create({
             data: {
                 idCliente: clienteId,
-                montoReembolso: parseFloat(montoReembolso),
+                monto: parseFloat(monto),
                 banco,
                 numCuentaDeposito,
                 docAdjunto,
                 comentarios,
-                estado: estado || 'P', // P = Pendiente
                 createdAt: new Date()
             }
         });
@@ -289,11 +287,11 @@ export const validateReembolso = async (req, res) => {
 }
 
 /**
- * Elimina un reembolso
+ * Revoca un reembolso
  * @param {Request} req - Objeto de solicitud Express
  * @param {Response} res - Objeto de respuesta Express
  */
-export const deleteReembolso = async (req, res) => {
+export const revokeReembolso = async (req, res) => {
     try {
         const { id } = req.params;
         
@@ -318,81 +316,28 @@ export const deleteReembolso = async (req, res) => {
             });
         }
         
-        // Actualizar el reembolso para marcarlo como cancelado en lugar de eliminarlo
-        const canceledReembolso = await prisma.reembolsos.update({
+        // Actualizar el reembolso para marcarlo como revocado
+        const revokedReembolso = await prisma.reembolsos.update({
             where: { idReembolso: reembolsoId },
             data: {
-                estado: 'cancelado',
-                canceledAt: new Date(),
+                estado: 'R', // R = Revocado
+                revokedAt: new Date(),
                 updatedAt: new Date()
             }
         });
         
         return res.status(200).json({
             success: true,
-            message: 'Reembolso cancelado correctamente'
+            data: revokedReembolso,
+            message: 'Reembolso revocado correctamente'
         });
     } catch (error) {
-        console.error('Error al eliminar reembolso:', error);
+        console.error('Error al revocar reembolso:', error);
         return res.status(500).json({
             success: false,
-            message: 'Error al eliminar reembolso',
+            message: 'Error al revocar reembolso',
             error: error.message
         });
     }
 }
 
-/**
- * Marca un reembolso como reembolsado
- * @param {Request} req - Objeto de solicitud Express
- * @param {Response} res - Objeto de respuesta Express
- */
-export const reimbursedReembolso = async (req, res) => {
-    try {
-        const { id } = req.params;
-        
-        // Validar que el ID sea un número
-        const reembolsoId = parseInt(id);
-        if (isNaN(reembolsoId)) {
-            return res.status(400).json({
-                success: false,
-                message: 'El ID del reembolso debe ser un número válido'
-            });
-        }
-        
-        // Verificar que el reembolso exista
-        const existingReembolso = await prisma.reembolsos.findUnique({
-            where: { idReembolso: reembolsoId }
-        });
-        
-        if (!existingReembolso) {
-            return res.status(404).json({
-                success: false,
-                message: `Reembolso con ID ${reembolsoId} no encontrado`
-            });
-        }
-        
-        // Actualizar el reembolso para marcarlo como reembolsado
-        const reimbursedReembolsoData = await prisma.reembolsos.update({
-            where: { idReembolso: reembolsoId },
-            data: {
-                estado: 'R', // R = Reembolsado
-                reimbursedAt: new Date(),
-                updatedAt: new Date()
-            }
-        });
-        
-        return res.status(200).json({
-            success: true,
-            data: reimbursedReembolsoData,
-            message: 'Reembolso marcado como reembolsado correctamente'
-        });
-    } catch (error) {
-        console.error('Error al marcar reembolso como reembolsado:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Error al marcar reembolso como reembolsado',
-            error: error.message
-        });
-    }
-}

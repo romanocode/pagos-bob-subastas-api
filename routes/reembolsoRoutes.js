@@ -4,9 +4,8 @@ import {
     getReembolsoById, 
     createReembolso, 
     updateReembolso, 
-    deleteReembolso,
     validateReembolso,
-    reimbursedReembolso
+    revokeReembolso
 } from '../controllers/reembolsoController.js';
 
 const router = express.Router();
@@ -47,17 +46,10 @@ router.put('/:id', updateReembolso);
 router.put('/:id/validate', validateReembolso);
 
 /**
- * @route PUT /api/reembolsos/:id/reimburse
- * @desc Marca un reembolso como reembolsado
+ * @route PUT /api/reembolsos/:id/revoke
+ * @desc Revocar un reembolso
  * @access Public
  */
-router.put('/:id/reimburse', reimbursedReembolso);
-
-/**
- * @route DELETE /api/reembolsos/:id
- * @desc Elimina un reembolso
- * @access Public
- */
-router.delete('/:id', deleteReembolso);
+router.put('/:id/revoke', revokeReembolso);
 
 export default router;

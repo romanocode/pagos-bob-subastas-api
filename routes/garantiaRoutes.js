@@ -1,11 +1,14 @@
 import express from 'express';
 import { 
-    getAllGarantias, 
+    getAllGarantias,
+    getAllGarantiasCliente,
     getGarantiaById, 
     createGarantia, 
     updateGarantia, 
-    deleteGarantia,
-    validateGarantia
+    validateGarantia,
+    paidGarantia,
+    invalidGarantia,
+    revokedGarantia
 } from '../controllers/garantiaController.js';
 
 const router = express.Router();
@@ -16,6 +19,13 @@ const router = express.Router();
  * @access Public
  */
 router.get('/', getAllGarantias);
+
+/**
+ * @route GET /api/garantias/cliente
+ * @desc Obtiene todas las garantías de un cliente
+ * @access Public
+ */
+router.get('/cliente/:id', getAllGarantiasCliente);
 
 /**
  * @route GET /api/garantias/:id
@@ -39,18 +49,31 @@ router.post('/', createGarantia);
 router.put('/:id', updateGarantia);
 
 /**
- * @route DELETE /api/garantias/:id
- * @desc Elimina una garantía
- * @access Public
- */
-router.delete('/:id', deleteGarantia);
-
-/**
- * @route PATCH /api/garantias/:id
+ * @route PATCH /api/garantias/:id/validate
  * @desc Valida una garantía
  * @access Public
  */
-router.patch('/:id', validateGarantia);
+router.patch('/:id/validate', validateGarantia);
 
+/**
+ * @route PATCH /api/garantias/:id/paid
+ * @desc Marca una garantía como pagada
+ * @access Public
+ */
+router.patch('/:id/paid', paidGarantia);
+
+/**
+ * @route PATCH /api/garantias/:id/invalid
+ * @desc Invalida una garantía
+ * @access Public
+ */
+router.patch('/:id/invalid', invalidGarantia);
+
+/**
+ * @route PATCH /api/garantias/:id/revoke
+ * @desc Revoca una garantía
+ * @access Public
+ */
+router.patch('/:id/revoke', revokedGarantia);
 
 export default router;
