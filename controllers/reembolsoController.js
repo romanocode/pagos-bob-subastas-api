@@ -24,6 +24,32 @@ export const getAllReembolsos = async (req, res) => {
 }
 
 /**
+ * Obtiene todos los reembolsos de un cliente por su ID
+ * @param {Request} req - Objeto de solicitud Express
+ * @param {Response} res - Objeto de respuesta Express
+ */
+export const getAllReembolsosCliente = async (req, res) => {
+    try {
+        const { idCliente } = req.params;
+        const reembolsos = await prisma.reembolsos.findMany({
+            where: { idCliente: parseInt(idCliente) }
+        });
+        return res.status(200).json({
+            success: true,
+            data: reembolsos,
+            message: 'Reembolsos obtenidos correctamente'
+        });
+    } catch (error) {
+        console.error('Error al obtener reembolsos:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error al obtener reembolsos',
+            error: error.message
+        });
+    }
+}
+
+/**
  * Obtiene un reembolso por su ID
  * @param {Request} req - Objeto de solicitud Express
  * @param {Response} res - Objeto de respuesta Express

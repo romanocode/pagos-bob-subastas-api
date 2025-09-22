@@ -5,7 +5,8 @@ import {
     createReembolso, 
     updateReembolso, 
     validateReembolso,
-    revokeReembolso
+    revokeReembolso,
+    getAllReembolsosCliente
 } from '../controllers/reembolsoController.js';
 
 const router = express.Router();
@@ -16,6 +17,13 @@ const router = express.Router();
  * @access Public
  */
 router.get('/', getAllReembolsos);
+
+/**
+ * @route GET /api/reembolsos/cliente/:idCliente
+ * @desc Obtiene todos los reembolsos de un cliente por su ID
+ * @access Public
+ */
+router.get('/cliente/:idCliente', getAllReembolsosCliente);
 
 /**
  * @route GET /api/reembolsos/:id

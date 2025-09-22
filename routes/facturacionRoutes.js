@@ -5,7 +5,8 @@ import {
     createFacturacion, 
     updateFacturacion, 
     validateFacturacion,
-    revokeFacturacion
+    revokeFacturacion,
+    getAllFacturacionesCliente
 } from '../controllers/facturacionController.js';
 
 const router = express.Router();
@@ -16,6 +17,13 @@ const router = express.Router();
  * @access Public
  */
 router.get('/', getAllFacturaciones);
+
+/**
+ * @route GET /api/facturacion/cliente/:idCliente
+ * @desc Obtiene todas las facturaciones de un cliente por su ID
+ * @access Public
+ */
+router.get('/cliente/:idCliente', getAllFacturacionesCliente);
 
 /**
  * @route GET /api/facturacion/:id

@@ -24,6 +24,32 @@ export const getAllFacturaciones = async (req, res) => {
 }
 
 /**
+ * Obtiene facturaciones de un cliente por su ID
+ * @param {Request} req - Objeto de solicitud Express
+ * @param {Response} res - Objeto de respuesta Express
+ */
+export const getAllFacturacionesCliente = async (req, res) => {
+    try {
+        const { idCliente } = req.params;
+        const facturaciones = await prisma.facturacion.findMany({
+            where: { idCliente: parseInt(idCliente) }
+        });
+        return res.status(200).json({
+            success: true,
+            data: facturaciones,
+            message: 'Facturaciones obtenidas correctamente'
+        });
+    } catch (error) {
+        console.error('Error al obtener facturaciones:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error al obtener facturaciones',
+            error: error.message
+        });
+    }
+}
+
+/**
  * Obtiene una facturación por su ID
  * @param {Request} req - Objeto de solicitud Express
  * @param {Response} res - Objeto de respuesta Express
@@ -104,7 +130,7 @@ export const createFacturacion = async (req, res) => {
         
         // Verificar que el cliente exista
         const existingCliente = await prisma.clientes.findUnique({
-            where: { idCliente: clienteId }
+            where: { id: clienteId }
         });
         
         if (!existingCliente) {
@@ -125,7 +151,7 @@ export const createFacturacion = async (req, res) => {
         
         // Verificar que la subasta exista
         const existingSubasta = await prisma.subastas.findUnique({
-            where: { idSubasta: subastaId }
+            where: { id: subastaId }
         });
         
         if (!existingSubasta) {
@@ -195,7 +221,7 @@ export const updateFacturacion = async (req, res) => {
         
         // Verificar que la facturación exista
         const existingFacturacion = await prisma.facturacion.findUnique({
-            where: { idFacturacion: facturacionId }
+            where: { id: facturacionId }
         });
         
         if (!existingFacturacion) {
@@ -216,7 +242,7 @@ export const updateFacturacion = async (req, res) => {
             }
             
             const existingCliente = await prisma.clientes.findUnique({
-                where: { idCliente: clienteId }
+                where: { id: clienteId }
             });
             
             if (!existingCliente) {
@@ -238,7 +264,7 @@ export const updateFacturacion = async (req, res) => {
             }
             
             const existingSubasta = await prisma.subastas.findUnique({
-                where: { idSubasta: subastaId }
+                where: { id: subastaId }
             });
             
             if (!existingSubasta) {
@@ -251,7 +277,7 @@ export const updateFacturacion = async (req, res) => {
         
         // Actualizar la facturación
         const updatedFacturacion = await prisma.facturacion.update({
-            where: { idFacturacion: facturacionId },
+            where: { id: facturacionId },
             data: {
                 ...(idCliente && { idCliente: parseInt(idCliente) }),
                 ...(idSubasta && { idSubasta: parseInt(idSubasta) }),
@@ -300,7 +326,7 @@ export const validateFacturacion = async (req, res) => {
         
         // Verificar que la facturación exista
         const existingFacturacion = await prisma.facturacion.findUnique({
-            where: { idFacturacion: facturacionId }
+            where: { id: facturacionId }
         });
         
         if (!existingFacturacion) {
@@ -312,7 +338,7 @@ export const validateFacturacion = async (req, res) => {
         
         // Validar la facturación
         const validatedFacturacion = await prisma.facturacion.update({
-            where: { idFacturacion: facturacionId },
+            where: { id: facturacionId },
             data: {
                 validatedAt: new Date(),
                 updatedAt: new Date()
@@ -354,7 +380,7 @@ export const revokeFacturacion = async (req, res) => {
         
         // Verificar que la facturación exista
         const existingFacturacion = await prisma.facturacion.findUnique({
-            where: { idFacturacion: facturacionId }
+            where: { id: facturacionId }
         });
         
         if (!existingFacturacion) {
@@ -366,7 +392,7 @@ export const revokeFacturacion = async (req, res) => {
         
         // Revocar la facturación
         const revokedFacturacion = await prisma.facturacion.update({
-            where: { idFacturacion: facturacionId },
+            where: { id: facturacionId },
             data: {
                 revokedAt: new Date(),
                 updatedAt: new Date()
