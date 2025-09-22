@@ -42,7 +42,7 @@ export const getClienteById = async (req, res) => {
         }
         
         const cliente = await prisma.clientes.findUnique({
-            where: { idCliente: clienteId }
+            where: { id: clienteId }
         });
         
         if (!cliente) {
@@ -68,6 +68,42 @@ export const getClienteById = async (req, res) => {
 }
 
 /**
+ * Obtener cliente por correo
+ * @param {Request} req - Objeto de solicitud Express
+ * @param {Response} res - Objeto de respuesta Express
+ */
+
+export const getClienteByCorreo = async (req, res) => {
+    try {
+        const { correo } = req.params;
+        
+        const cliente = await prisma.clientes.findFirst({
+            where: { correo }
+        });
+        
+        if (!cliente) {
+            return res.status(404).json({
+                success: false,
+                message: `Cliente con correo ${correo} no encontrado`
+            });
+        }
+        
+        return res.status(200).json({
+            success: true,
+            data: cliente,
+            message: 'Cliente obtenido correctamente'
+        });
+    } catch (error) {
+        console.error('Error al obtener cliente por correo:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error al obtener cliente',
+            error: error.message
+        });
+    }
+}
+
+/**
  * Crea un nuevo cliente
  * @param {Request} req - Objeto de solicitud Express
  * @param {Response} res - Objeto de respuesta Express
@@ -80,14 +116,11 @@ export const createCliente = async (req, res) => {
             tipDocumento, 
             numDocumento, 
             numCelular, 
-            saldoTotalDolar, 
-            dtFacRuc, 
-            dtFacRazonSocial, 
-            estado 
+            saldoTotalDolar
         } = req.body;
         
         // Validaciones básicas
-        if (!correo || !nombreCompleto || !tipDocumento || !numDocumento || !numCelular || !dtFacRuc || !dtFacRazonSocial) {
+        if (!correo || !nombreCompleto || !tipDocumento || !numDocumento || !numCelular) {
             return res.status(400).json({
                 success: false,
                 message: 'Todos los campos obligatorios deben ser proporcionados'
@@ -124,9 +157,7 @@ export const createCliente = async (req, res) => {
                 numDocumento,
                 numCelular,
                 saldoTotalDolar: saldoTotalDolar ? parseFloat(saldoTotalDolar) : 0,
-                dtFacRuc,
-                dtFacRazonSocial,
-                activo: estado !== undefined ? estado : true,
+                activo: true,
                 createdAt: new Date()
             }
         });
@@ -161,9 +192,6 @@ export const updateCliente = async (req, res) => {
             numDocumento, 
             numCelular, 
             saldoTotalDolar, 
-            dtFacRuc, 
-            dtFacRazonSocial, 
-            estado 
         } = req.body;
         
         // Validar que el ID sea un número
@@ -177,7 +205,7 @@ export const updateCliente = async (req, res) => {
         
         // Verificar que el cliente exista
         const existingCliente = await prisma.clientes.findUnique({
-            where: { idCliente: clienteId }
+            where: { id: clienteId }
         });
         
         if (!existingCliente) {
@@ -201,7 +229,7 @@ export const updateCliente = async (req, res) => {
             const clienteWithEmail = await prisma.clientes.findFirst({
                 where: { 
                     correo,
-                    NOT: { idCliente: clienteId }
+                    NOT: { id: clienteId }
                 }
             });
             
@@ -215,7 +243,7 @@ export const updateCliente = async (req, res) => {
         
         // Actualizar el cliente
         const updatedCliente = await prisma.clientes.update({
-            where: { idCliente: clienteId },
+            where: { id: clienteId },
             data: {
                 ...(correo && { correo }),
                 ...(nombreCompleto && { nombreCompleto }),
@@ -223,9 +251,6 @@ export const updateCliente = async (req, res) => {
                 ...(numDocumento && { numDocumento }),
                 ...(numCelular && { numCelular }),
                 ...(saldoTotalDolar !== undefined && { saldoTotalDolar: parseFloat(saldoTotalDolar) }),
-                ...(dtFacRuc && { dtFacRuc }),
-                ...(dtFacRazonSocial && { dtFacRazonSocial }),
-                ...(estado !== undefined && { activo: estado }),
                 updatedAt: new Date()
             }
         });
@@ -240,59 +265,6 @@ export const updateCliente = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: 'Error al actualizar cliente',
-            error: error.message
-        });
-    }
-}
-
-/**
- * Elimina un cliente
- * @param {Request} req - Objeto de solicitud Express
- * @param {Response} res - Objeto de respuesta Express
- */
-export const deleteCliente = async (req, res) => {
-    try {
-        const { id } = req.params;
-        
-        // Validar que el ID sea un número
-        const clienteId = parseInt(id);
-        if (isNaN(clienteId)) {
-            return res.status(400).json({
-                success: false,
-                message: 'El ID del cliente debe ser un número válido'
-            });
-        }
-        
-        // Verificar que el cliente exista
-        const existingCliente = await prisma.clientes.findUnique({
-            where: { idCliente: clienteId }
-        });
-        
-        if (!existingCliente) {
-            return res.status(404).json({
-                success: false,
-                message: `Cliente con ID ${clienteId} no encontrado`
-            });
-        }
-        
-        // Actualizar el cliente para marcarlo como cancelado en lugar de eliminarlo
-        const updatedCliente = await prisma.clientes.update({
-            where: { idCliente: clienteId },
-            data: {
-                estado: false,
-                canceledAt: new Date()
-            }
-        });
-        
-        return res.status(200).json({
-            success: true,
-            message: 'Cliente marcado como eliminado correctamente'
-        });
-    } catch (error) {
-        console.error('Error al eliminar cliente:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Error al eliminar cliente',
             error: error.message
         });
     }
@@ -318,7 +290,7 @@ export const changeClienteStatus = async (req, res) => {
         
         // Verificar que el cliente exista
         const existingCliente = await prisma.clientes.findUnique({
-            where: { idCliente: clienteId }
+            where: { id: clienteId }
         });
         
         if (!existingCliente) {
@@ -328,13 +300,12 @@ export const changeClienteStatus = async (req, res) => {
             });
         }
         
-        // Alternar estado y actualizar canceledAt si se está desactivando
-        const newStatus = !existingCliente.estado;
+        // Alternar estado si se está desactivando
+        const newStatus = !existingCliente.activo;
         const updatedCliente = await prisma.clientes.update({
-            where: { idCliente: clienteId },
+            where: { id: clienteId },
             data: {
-                estado: newStatus,
-                ...(newStatus === false && { canceledAt: new Date() })
+                activo: newStatus
             }
         });
         

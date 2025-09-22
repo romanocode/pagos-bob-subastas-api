@@ -44,7 +44,11 @@ export const getAllGarantiasCliente = async (req, res) => {
         const garantias = await prisma.garantias.findMany({
             where: {
                 idCliente: clienteId
+            },
+            include: {
+                subasta: true
             }
+            
         });
         return res.status(200).json({
             success: true,
@@ -81,7 +85,7 @@ export const getGarantiaById = async (req, res) => {
         }
         
         const garantia = await prisma.garantias.findUnique({
-            where: { idGarantia: garantiaId }
+            where: { id: garantiaId }
         });
         
         if (!garantia) {
@@ -121,15 +125,19 @@ export const createGarantia = async (req, res) => {
             fechaExpiracion,
             tipo,
             moneda,
+            porcentaje,
             montoGarantia,
-            banco,
-            numCuentaDeposito,
-            docAdjunto,
-            comentarios
+            montoPuja,
+            banco = "",
+            numCuentaDeposito = "",
+            docAdjunto = "",
+            dtFacRuc = "",
+            dtFacRazonSocial = "",
+            comentarios = ""
         } = req.body;
         
         // Validaciones básicas
-        if (!idCliente || !idSubasta || !concepto || !fechaSubasta || !fechaExpiracion || !tipo || !moneda || !montoGarantia || !banco || !numCuentaDeposito || !docAdjunto) {
+        if (!idCliente || !idSubasta || !concepto || !fechaSubasta || !fechaExpiracion || !tipo || !moneda || !montoGarantia || !montoPuja || !porcentaje) {
             return res.status(400).json({
                 success: false,
                 message: 'Todos los campos obligatorios deben ser proporcionados'
@@ -147,7 +155,7 @@ export const createGarantia = async (req, res) => {
         
         // Verificar que el cliente exista
         const existingCliente = await prisma.clientes.findUnique({
-            where: { idCliente: clienteId }
+            where: { id: clienteId }
         });
         
         if (!existingCliente) {
@@ -168,7 +176,7 @@ export const createGarantia = async (req, res) => {
         
         // Verificar que la subasta exista
         const existingSubasta = await prisma.subastas.findUnique({
-            where: { idSubasta: subastaId }
+            where: { id: subastaId }
         });
         
         if (!existingSubasta) {
@@ -188,10 +196,14 @@ export const createGarantia = async (req, res) => {
                 fechaExpiracion: new Date(fechaExpiracion),
                 tipo,
                 moneda,
+                porcentaje: parseFloat(porcentaje),
                 montoGarantia: parseFloat(montoGarantia),
+                montoPuja: parseFloat(montoPuja),
                 banco,
                 numCuentaDeposito,
                 docAdjunto,
+                dtFacRuc,
+                dtFacRazonSocial,
                 comentarios,
                 createdAt: new Date()
             }
@@ -222,17 +234,15 @@ export const updateGarantia = async (req, res) => {
         const { id } = req.params;
         const { 
             idCliente,
-            tipo,
-            placaVehiculo,
-            empresaVehiculo,
+            idSubasta,
+            concepto,
             fechaSubasta,
+            fechaExpiracion,
+            tipo,
             moneda,
-            montoGarantia,
-            banco,
-            numCuentaDeposito,
-            docAdjunto,
-            comentarios,
-            estado
+            porcentaje,
+            montoPuja,
+            montoGarantia
         } = req.body;
         
         // Validar que el ID sea un número
@@ -246,7 +256,7 @@ export const updateGarantia = async (req, res) => {
         
         // Verificar que la garantía exista
         const existingGarantia = await prisma.garantias.findUnique({
-            where: { idGarantia: garantiaId }
+            where: { id: garantiaId }
         });
         
         if (!existingGarantia) {
@@ -267,7 +277,7 @@ export const updateGarantia = async (req, res) => {
             }
             
             const existingCliente = await prisma.clientes.findUnique({
-                where: { idCliente: clienteId }
+                where: { id: clienteId }
             });
             
             if (!existingCliente) {
@@ -278,22 +288,42 @@ export const updateGarantia = async (req, res) => {
             }
         }
         
+        // Si se proporciona un ID de subasta, verificar que exista
+        if (idSubasta) {
+            const subastaId = parseInt(idSubasta);
+            if (isNaN(subastaId)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'El ID de la subasta debe ser un número válido'
+                });
+            }
+            
+            const existingSubasta = await prisma.subastas.findUnique({
+                where: { id: subastaId }
+            });
+            
+            if (!existingSubasta) {
+                return res.status(404).json({
+                    success: false,
+                    message: `Subasta con ID ${subastaId} no encontrada`
+                });
+            }
+        }
+        
         // Actualizar la garantía
         const updatedGarantia = await prisma.garantias.update({
-            where: { idGarantia: garantiaId },
+            where: { id: garantiaId },
             data: {
                 ...(idCliente && { idCliente: parseInt(idCliente) }),
-                ...(tipo && { tipo }),
-                ...(placaVehiculo && { placaVehiculo }),
-                ...(empresaVehiculo && { empresaVehiculo }),
+                ...(idSubasta && { idSubasta: parseInt(idSubasta) }),
+                ...(concepto && { concepto }),
                 ...(fechaSubasta && { fechaSubasta: new Date(fechaSubasta) }),
+                ...(fechaExpiracion && { fechaExpiracion: new Date(fechaExpiracion) }),
+                ...(tipo && { tipo }),
                 ...(moneda && { moneda }),
+                ...(porcentaje !== undefined && { porcentaje: parseFloat(porcentaje) }),
+                ...(montoPuja !== undefined && { montoPuja: parseFloat(montoPuja) }),
                 ...(montoGarantia !== undefined && { montoGarantia: parseFloat(montoGarantia) }),
-                ...(banco && { banco }),
-                ...(numCuentaDeposito && { numCuentaDeposito }),
-                ...(docAdjunto && { docAdjunto }),
-                ...(comentarios !== undefined && { comentarios }),
-                ...(estado && { estado }),
                 updatedAt: new Date()
             }
         });
@@ -333,7 +363,7 @@ export const validateGarantia = async (req, res) => {
         
         // Verificar que la garantía exista
         const existingGarantia = await prisma.garantias.findUnique({
-            where: { idGarantia: garantiaId }
+            where: { id: garantiaId }
         });
         
         if (!existingGarantia) {
@@ -345,9 +375,8 @@ export const validateGarantia = async (req, res) => {
         
         // Actualizar la garantía para marcarla como validada
         const validatedGarantia = await prisma.garantias.update({
-            where: { idGarantia: garantiaId },
+            where: { id: garantiaId },
             data: {
-                estado: 'V', // V = Validado
                 validatedAt: new Date(),
                 updatedAt: new Date()
             }
@@ -363,61 +392,6 @@ export const validateGarantia = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: 'Error al validar garantía',
-            error: error.message
-        });
-    }
-}
-
-
-/**
- * Marca una garantía como pagada
- * @param {Request} req - Objeto de solicitud Express
- * @param {Response} res - Objeto de respuesta Express
- */
-export const paidGarantia = async (req, res) => {
-    try {
-        const { id } = req.params;
-        
-        // Validar que el ID sea un número
-        const garantiaId = parseInt(id);
-        if (isNaN(garantiaId)) {
-            return res.status(400).json({
-                success: false,
-                message: 'El ID de la garantía debe ser un número válido'
-            });
-        }
-        
-        // Verificar que la garantía exista
-        const existingGarantia = await prisma.garantias.findUnique({
-            where: { idGarantia: garantiaId }
-        });
-        
-        if (!existingGarantia) {
-            return res.status(404).json({
-                success: false,
-                message: `Garantía con ID ${garantiaId} no encontrada`
-            });
-        }
-        
-        // Actualizar la garantía para marcarla como pagada
-        const paidGarantia = await prisma.garantias.update({
-            where: { idGarantia: garantiaId },
-            data: {
-                paidAt: new Date(),
-                updatedAt: new Date()
-            }
-        });
-        
-        return res.status(200).json({
-            success: true,
-            data: paidGarantia,
-            message: 'Garantía marcada como pagada correctamente'
-        });
-    } catch (error) {
-        console.error('Error al marcar garantía como pagada:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Error al marcar garantía como pagada',
             error: error.message
         });
     }
@@ -443,7 +417,7 @@ export const invalidGarantia = async (req, res) => {
         
         // Verificar que la garantía exista
         const existingGarantia = await prisma.garantias.findUnique({
-            where: { idGarantia: garantiaId }
+            where: { id: garantiaId }
         });
         
         if (!existingGarantia) {
@@ -455,7 +429,7 @@ export const invalidGarantia = async (req, res) => {
         
         // Actualizar la garantía para marcarla como invalidada
         const invalidatedGarantia = await prisma.garantias.update({
-            where: { idGarantia: garantiaId },
+            where: { id: garantiaId },
             data: {
                 invalidatedAt: new Date(),
                 updatedAt: new Date()
@@ -497,7 +471,7 @@ export const revokedGarantia = async (req, res) => {
         
         // Verificar que la garantía exista
         const existingGarantia = await prisma.garantias.findUnique({
-            where: { idGarantia: garantiaId }
+            where: { id: garantiaId }
         });
         
         if (!existingGarantia) {
@@ -509,7 +483,7 @@ export const revokedGarantia = async (req, res) => {
         
         // Actualizar la garantía para marcarla como revocada
         const revokedGarantia = await prisma.garantias.update({
-            where: { idGarantia: garantiaId },
+            where: { id: garantiaId },
             data: {
                 revokedAt: new Date(),
                 updatedAt: new Date()
@@ -526,6 +500,117 @@ export const revokedGarantia = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: 'Error al revocar garantía',
+            error: error.message
+        });
+    }
+}
+
+export const updateGarantiaClient = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const {
+            banco,
+            numCuentaDeposito,
+            docAdjunto,
+            comentarios,
+            dtFacRuc,
+            dtFacRazonSocial,
+        } = req.body;
+        
+        // Validar que el ID sea un número
+        const garantiaId = parseInt(id);
+        if (isNaN(garantiaId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'El ID de la garantía debe ser un número válido'
+            });
+        }
+        
+        // Verificar que la garantía exista
+        const existingGarantia = await prisma.garantias.findUnique({
+            where: { id: garantiaId }
+        });
+        
+        if (!existingGarantia) {
+            return res.status(404).json({
+                success: false,
+                message: `Garantía con ID ${garantiaId} no encontrada`
+            })
+        }
+        
+        // Actualizar la garantía
+        const updatedGarantia = await prisma.garantias.update({
+            where: { id: garantiaId },
+            data: {
+                banco,
+                numCuentaDeposito,
+                docAdjunto,
+                comentarios,
+                dtFacRuc,
+                dtFacRazonSocial,
+                updatedAt: new Date()
+            }
+        });
+        
+        return res.status(200).json({
+            success: true,
+            data: updatedGarantia,
+            message: 'Garantía actualizada correctamente'
+        });
+    } catch (error) {
+        console.error('Error al actualizar garantía:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error al actualizar garantía',
+            error: error.message
+        });
+    }
+}
+
+export const sentGarantia = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Validar que el ID sea un número
+        const garantiaId = parseInt(id);
+        if (isNaN(garantiaId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'El ID de la garantía debe ser un número válido'
+            });
+        }
+        
+        // Verificar que la garantía exista
+        const existingGarantia = await prisma.garantias.findUnique({
+            where: { id: garantiaId }
+        });
+        
+        if (!existingGarantia) {
+            return res.status(404).json({
+                success: false,
+                message: `Garantía con ID ${garantiaId} no encontrada`
+            });
+        }
+        
+        // Actualizar la garantía para marcarla como enviada
+        const sentGarantia = await prisma.garantias.update({
+            where: { id: garantiaId },
+            data: {
+                sentedAt: new Date(),
+                updatedAt: new Date()
+            }
+        });
+        
+        return res.status(200).json({
+            success: true,
+            data: sentGarantia,
+            message: 'Garantía enviada correctamente'
+        });
+    } catch (error) {
+        console.error('Error al enviar garantía:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error al enviar garantía',
             error: error.message
         });
     }

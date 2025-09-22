@@ -4,8 +4,8 @@ import {
     getClienteById, 
     createCliente, 
     updateCliente, 
-    deleteCliente,
     changeClienteStatus,
+    getClienteByCorreo
 } from '../controllers/clienteController.js';
 
 const router = express.Router();
@@ -25,6 +25,13 @@ router.get('/', getAllClientes);
 router.get('/:id', getClienteById);
 
 /**
+ * @route GET /api/clientes/correo/:correo
+ * @desc Obtiene un cliente por su correo
+ * @access Public
+ */
+router.get('/correo/:correo', getClienteByCorreo);
+
+/**
  * @route POST /api/clientes
  * @desc Crea un nuevo cliente
  * @access Public
@@ -39,20 +46,11 @@ router.post('/', createCliente);
 router.put('/:id', updateCliente);
 
 /**
- * @route DELETE /api/clientes/:id
- * @desc Elimina un cliente
- * @access Public
- */
-router.delete('/:id', deleteCliente);
-
-/**
  * @route PATCH /api/clientes/:id
  * @desc Cambia el estado de un cliente
  * @access Public
  */
 router.patch('/:id', changeClienteStatus);
-
-
 
 
 export default router;

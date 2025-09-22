@@ -5,10 +5,11 @@ import {
     getGarantiaById, 
     createGarantia, 
     updateGarantia, 
+    updateGarantiaClient,
     validateGarantia,
-    paidGarantia,
     invalidGarantia,
-    revokedGarantia
+    revokedGarantia,
+    sentGarantia
 } from '../controllers/garantiaController.js';
 
 const router = express.Router();
@@ -56,13 +57,6 @@ router.put('/:id', updateGarantia);
 router.patch('/:id/validate', validateGarantia);
 
 /**
- * @route PATCH /api/garantias/:id/paid
- * @desc Marca una garantía como pagada
- * @access Public
- */
-router.patch('/:id/paid', paidGarantia);
-
-/**
  * @route PATCH /api/garantias/:id/invalid
  * @desc Invalida una garantía
  * @access Public
@@ -75,5 +69,20 @@ router.patch('/:id/invalid', invalidGarantia);
  * @access Public
  */
 router.patch('/:id/revoke', revokedGarantia);
+
+/**
+ * @route PATCH /api/garantias/:id/client
+ * @desc Actualiza una garantía existente de un cliente
+ * @access Public
+ */
+router.put('/:id/client', updateGarantiaClient);
+
+/**
+ * @route PATCH /api/garantias/:id/sent
+ * @desc Envía una garantía
+ * @access Public
+ */
+router.patch('/:id/sent', sentGarantia);
+
 
 export default router;

@@ -16,7 +16,7 @@ datasource db {
 
 
 model Subastas{
-  idSubasta     Int      @id @default(autoincrement())
+  id     Int      @id @default(autoincrement())
   titulo        String
   imgSubasta    String?
   placaVehiculo String
@@ -29,26 +29,31 @@ model Subastas{
   createdAt     DateTime @default(now())
   updatedAt     DateTime?
   canceledAt    DateTime?
+
+  garantias        Garantias[]
+  facturaciones     Facturacion[]
 }
 
 model Clientes {
-  idCliente         Int      @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   correo            String
   nombreCompleto    String
   tipDocumento     String
   numDocumento     String
   numCelular       String
   saldoTotalDolar  Decimal    @default(0)
-  dtFacRuc         String
-  dtFacRazonSocial String
   activo           Boolean    @default(true)
   createdAt        DateTime    @default(now())
   updatedAt        DateTime?
   canceledAt       DateTime?
+
+  garantias        Garantias[]
+  reembolsos        Reembolsos[]
+  facturaciones     Facturacion[]
 }
 
 model Garantias {
-  idGarantia        Int      @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   idSubasta         Int
   idCliente         Int
   concepto          String
@@ -56,21 +61,28 @@ model Garantias {
   fechaExpiracion   DateTime
   tipo              String
   moneda            String
+  porcentaje        Decimal
+  montoPuja         Decimal
   montoGarantia     Decimal
   banco             String
   numCuentaDeposito String
   docAdjunto        String
+  dtFacRuc         String
+  dtFacRazonSocial String
   comentarios       String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime?
-  paidAt            DateTime?
+  sentedAt          DateTime?
   validatedAt       DateTime?
   invalidatedAt     DateTime?
   revokedAt         DateTime?
+
+  subasta           Subastas @relation(fields: [idSubasta], references: [id])
+  cliente           Clientes @relation(fields: [idCliente], references: [id])
 }
 
 model Reembolsos{
-  idReembolso       Int      @id @default(autoincrement())
+  id       Int      @id @default(autoincrement())
   idCliente         Int
   monto             Decimal
   banco             String
@@ -81,10 +93,12 @@ model Reembolsos{
   updatedAt         DateTime?
   validatedAt       DateTime?
   revokedAt         DateTime?
+
+  cliente           Clientes @relation(fields: [idCliente], references: [id])
 }
 
 model Facturacion{
-  idFacturacion     Int      @id @default(autoincrement())
+  id     Int      @id @default(autoincrement())
   idCliente         Int
   idSubasta         Int
   monto             Decimal
@@ -97,5 +111,8 @@ model Facturacion{
   updatedAt         DateTime?
   validatedAt       DateTime?
   revokedAt         DateTime?
+
+  subasta           Subastas @relation(fields: [idSubasta], references: [id])
+  cliente           Clientes @relation(fields: [idCliente], references: [id])
 }
 

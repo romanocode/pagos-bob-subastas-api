@@ -4,7 +4,8 @@ import {
     getSubastaById, 
     createSubasta, 
     updateSubasta, 
-    deleteSubasta 
+    deleteSubasta,
+    closeSubasta
 } from '../controllers/subastaController.js';
 
 const router = express.Router();
@@ -43,5 +44,13 @@ router.put('/:id', updateSubasta);
  * @access Private
  */
 router.delete('/:id', deleteSubasta);
+
+/**
+ * @route PUT /api/subastas/:id/close
+ * @desc Cierra una subasta existente
+ * @access Private
+ */
+router.patch('/:id/closeSubasta', closeSubasta);
+
 
 export default router;

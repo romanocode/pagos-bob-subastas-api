@@ -156,7 +156,7 @@ export const updateSubasta = async (req, res) => {
         
         // Verificar que la subasta exista
         const existingSubasta = await prisma.subastas.findUnique({
-            where: { idSubasta: subastaId }
+            where: { id: subastaId }
         });
         
         if (!existingSubasta) {
@@ -168,7 +168,7 @@ export const updateSubasta = async (req, res) => {
         
         // Actualizar la subasta
         const updatedSubasta = await prisma.subastas.update({
-            where: { idSubasta: subastaId },
+            where: { id: subastaId },
             data: {
                 ...(titulo && { titulo }),
                 ...(imgSubasta !== undefined && { imgSubasta }),
@@ -218,7 +218,7 @@ export const deleteSubasta = async (req, res) => {
         
         // Verificar que la subasta exista
         const existingSubasta = await prisma.subastas.findUnique({
-            where: { idSubasta: subastaId }
+            where: { id: subastaId }
         });
         
         if (!existingSubasta) {
@@ -230,7 +230,7 @@ export const deleteSubasta = async (req, res) => {
         
         // Marcar como cancelada en lugar de eliminar
         const canceledSubasta = await prisma.subastas.update({
-            where: { idSubasta: subastaId },
+            where: { id: subastaId },
             data: {
                 estado: 'CANCELADA',
                 canceledAt: new Date(),
@@ -248,6 +248,48 @@ export const deleteSubasta = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: 'Error al cancelar subasta',
+            error: error.message
+        });
+    }
+}
+
+export const closeSubasta = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const subastaId = parseInt(id);
+        if (isNaN(subastaId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'El ID de la subasta debe ser un número válido'
+            });
+        }
+        const existingSubasta = await prisma.subastas.findUnique({
+            where: { id: subastaId }
+        });
+        if (!existingSubasta) {
+            return res.status(404).json({
+                success: false,
+                message: `Subasta con ID ${subastaId} no encontrada`
+            });
+        }
+        const closedSubasta = await prisma.subastas.update({
+            where: { id: subastaId },
+            data: {
+                estado: 'CERRADA',
+                canceledAt: new Date(),
+                updatedAt: new Date()
+            }
+        });
+        return res.status(200).json({
+            success: true,
+            data: closedSubasta,
+            message: 'Subasta cerrada correctamente'
+        })
+    } catch (error) {
+        console.error('Error al cerrar subasta:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error al cerrar subasta',
             error: error.message
         });
     }
