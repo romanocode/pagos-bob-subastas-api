@@ -9,7 +9,8 @@ import {
     validateGarantia,
     invalidGarantia,
     revokedGarantia,
-    sentGarantia
+    sentGarantia,
+    deleteGarantia
 } from '../controllers/garantiaController.js';
 
 const router = express.Router();
@@ -71,11 +72,11 @@ router.patch('/:id/invalid', invalidGarantia);
 router.patch('/:id/revoke', revokedGarantia);
 
 /**
- * @route PATCH /api/garantias/:id/client
+ * @route PATCH /api/garantias/:id/cliente
  * @desc Actualiza una garantía existente de un cliente
  * @access Public
  */
-router.put('/:id/client', updateGarantiaClient);
+router.put('/:id/cliente', updateGarantiaClient);
 
 /**
  * @route PATCH /api/garantias/:id/sent
@@ -83,6 +84,14 @@ router.put('/:id/client', updateGarantiaClient);
  * @access Public
  */
 router.patch('/:id/sent', sentGarantia);
+
+
+/**
+ * @route DELETE /api/garantias/:id
+ * @desc Elimina una garantía
+ * @access Public
+ */
+router.delete('/:id', deleteGarantia);
 
 
 export default router;

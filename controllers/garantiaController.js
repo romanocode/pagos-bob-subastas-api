@@ -616,3 +616,46 @@ export const sentGarantia = async (req, res) => {
     }
 }
 
+export const deleteGarantia = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Validar que el ID sea un número
+        const garantiaId = parseInt(id);
+        if (isNaN(garantiaId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'El ID de la garantía debe ser un número válido'
+            });
+        }
+        
+        // Verificar que la garantía exista
+        const existingGarantia = await prisma.garantias.findUnique({
+            where: { id: garantiaId }
+        });
+        
+        if (!existingGarantia) {
+            return res.status(404).json({
+                success: false,
+                message: `Garantía con ID ${garantiaId} no encontrada`
+            });
+        }
+        
+        // Eliminar la garantía
+        await prisma.garantias.delete({
+            where: { id: garantiaId }
+        });
+        
+        return res.status(200).json({
+            success: true,
+            message: `Garantía con ID ${garantiaId} eliminada correctamente`
+        });
+    } catch (error) {
+        console.error('Error al eliminar garantía:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error al eliminar garantía',
+            error: error.message
+        });
+    }
+}

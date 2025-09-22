@@ -128,7 +128,7 @@ export const createReembolso = async (req, res) => {
         
         // Verificar que el cliente exista
         const existingCliente = await prisma.clientes.findUnique({
-            where: { idCliente: clienteId }
+            where: { id: clienteId }
         });
         
         if (!existingCliente) {

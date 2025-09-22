@@ -31,7 +31,6 @@ model Subastas{
   canceledAt    DateTime?
 
   garantias        Garantias[]
-  facturaciones     Facturacion[]
 }
 
 model Clientes {
@@ -48,8 +47,8 @@ model Clientes {
   canceledAt       DateTime?
 
   garantias        Garantias[]
-  reembolsos        Reembolsos[]
-  facturaciones     Facturacion[]
+  reembolsos       Reembolsos[]
+  facturacion      Facturacion[]
 }
 
 model Garantias {
@@ -100,7 +99,6 @@ model Reembolsos{
 model Facturacion{
   id     Int      @id @default(autoincrement())
   idCliente         Int
-  idSubasta         Int
   monto             Decimal
   banco             String
   numCuentaDeposito String
@@ -112,7 +110,6 @@ model Facturacion{
   validatedAt       DateTime?
   revokedAt         DateTime?
 
-  subasta           Subastas @relation(fields: [idSubasta], references: [id])
   cliente           Clientes @relation(fields: [idCliente], references: [id])
 }
 

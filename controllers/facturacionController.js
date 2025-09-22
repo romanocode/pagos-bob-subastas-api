@@ -102,7 +102,6 @@ export const createFacturacion = async (req, res) => {
     try {
         const { 
             idCliente,
-            idSubasta,
             monto,
             banco,
             numCuentaDeposito,
@@ -112,7 +111,7 @@ export const createFacturacion = async (req, res) => {
         } = req.body;
         
         // Validaciones básicas
-        if (!idCliente || !idSubasta || !monto || !banco || !numCuentaDeposito || !concepto) {
+        if (!idCliente || !monto || !banco || !numCuentaDeposito || !concepto) {
             return res.status(400).json({
                 success: false,
                 message: 'Todos los campos obligatorios deben ser proporcionados'
@@ -140,32 +139,10 @@ export const createFacturacion = async (req, res) => {
             });
         }
         
-        // Validar que el ID de la subasta sea un número
-        const subastaId = parseInt(idSubasta);
-        if (isNaN(subastaId)) {
-            return res.status(400).json({
-                success: false,
-                message: 'El ID de la subasta debe ser un número válido'
-            });
-        }
-        
-        // Verificar que la subasta exista
-        const existingSubasta = await prisma.subastas.findUnique({
-            where: { id: subastaId }
-        });
-        
-        if (!existingSubasta) {
-            return res.status(404).json({
-                success: false,
-                message: `Subasta con ID ${subastaId} no encontrada`
-            });
-        }
-        
         // Crear la facturación
         const newFacturacion = await prisma.facturacion.create({
             data: {
                 idCliente: clienteId,
-                idSubasta: subastaId,
                 monto: parseFloat(monto),
                 banco,
                 numCuentaDeposito,
@@ -201,7 +178,6 @@ export const updateFacturacion = async (req, res) => {
         const { id } = req.params;
         const { 
             idCliente,
-            idSubasta,
             monto,
             banco,
             numCuentaDeposito,
@@ -253,34 +229,11 @@ export const updateFacturacion = async (req, res) => {
             }
         }
         
-        // Validar subasta si se proporciona
-        if (idSubasta) {
-            const subastaId = parseInt(idSubasta);
-            if (isNaN(subastaId)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'El ID de la subasta debe ser un número válido'
-                });
-            }
-            
-            const existingSubasta = await prisma.subastas.findUnique({
-                where: { id: subastaId }
-            });
-            
-            if (!existingSubasta) {
-                return res.status(404).json({
-                    success: false,
-                    message: `Subasta con ID ${subastaId} no encontrada`
-                });
-            }
-        }
-        
         // Actualizar la facturación
         const updatedFacturacion = await prisma.facturacion.update({
             where: { id: facturacionId },
             data: {
                 ...(idCliente && { idCliente: parseInt(idCliente) }),
-                ...(idSubasta && { idSubasta: parseInt(idSubasta) }),
                 ...(monto !== undefined && { monto: parseFloat(monto) }),
                 ...(banco && { banco }),
                 ...(numCuentaDeposito && { numCuentaDeposito }),
