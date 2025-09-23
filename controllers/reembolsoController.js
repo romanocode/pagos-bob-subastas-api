@@ -68,7 +68,7 @@ export const getReembolsoById = async (req, res) => {
         }
         
         const reembolso = await prisma.reembolsos.findUnique({
-            where: { idReembolso: reembolsoId }
+            where: { id: reembolsoId }
         });
         
         if (!reembolso) {
@@ -176,12 +176,11 @@ export const updateReembolso = async (req, res) => {
         const { id } = req.params;
         const { 
             idCliente,
-            montoReembolso,
+            monto,
             banco,
             numCuentaDeposito,
             docAdjunto,
-            comentarios,
-            estado
+            comentarios
         } = req.body;
         
         // Validar que el ID sea un número
@@ -195,7 +194,7 @@ export const updateReembolso = async (req, res) => {
         
         // Verificar que el reembolso exista
         const existingReembolso = await prisma.reembolsos.findUnique({
-            where: { idReembolso: reembolsoId }
+            where: { id: reembolsoId }
         });
         
         if (!existingReembolso) {
@@ -216,7 +215,7 @@ export const updateReembolso = async (req, res) => {
             }
             
             const existingCliente = await prisma.clientes.findUnique({
-                where: { idCliente: clienteId }
+                where: { id: clienteId }
             });
             
             if (!existingCliente) {
@@ -229,15 +228,14 @@ export const updateReembolso = async (req, res) => {
         
         // Actualizar el reembolso
         const updatedReembolso = await prisma.reembolsos.update({
-            where: { idReembolso: reembolsoId },
+            where: { id: reembolsoId },
             data: {
                 ...(idCliente && { idCliente: parseInt(idCliente) }),
-                ...(montoReembolso !== undefined && { montoReembolso: parseFloat(montoReembolso) }),
+                ...(monto !== undefined && { monto: parseFloat(monto) }),
                 ...(banco && { banco }),
                 ...(numCuentaDeposito && { numCuentaDeposito }),
                 ...(docAdjunto !== undefined && { docAdjunto }),
                 ...(comentarios !== undefined && { comentarios }),
-                ...(estado && { estado }),
                 updatedAt: new Date()
             }
         });
@@ -277,7 +275,7 @@ export const validateReembolso = async (req, res) => {
         
         // Verificar que el reembolso exista
         const existingReembolso = await prisma.reembolsos.findUnique({
-            where: { idReembolso: reembolsoId }
+            where: { id: reembolsoId }
         });
         
         if (!existingReembolso) {
@@ -289,9 +287,8 @@ export const validateReembolso = async (req, res) => {
         
         // Actualizar el reembolso para marcarlo como aprobado
         const validatedReembolso = await prisma.reembolsos.update({
-            where: { idReembolso: reembolsoId },
+            where: { id: reembolsoId },
             data: {
-                estado: 'A', // A = Aprobado
                 validatedAt: new Date(),
                 updatedAt: new Date()
             }
@@ -332,7 +329,7 @@ export const revokeReembolso = async (req, res) => {
         
         // Verificar que el reembolso exista
         const existingReembolso = await prisma.reembolsos.findUnique({
-            where: { idReembolso: reembolsoId }
+            where: { id: reembolsoId }
         });
         
         if (!existingReembolso) {
@@ -344,9 +341,8 @@ export const revokeReembolso = async (req, res) => {
         
         // Actualizar el reembolso para marcarlo como revocado
         const revokedReembolso = await prisma.reembolsos.update({
-            where: { idReembolso: reembolsoId },
+            where: { id: reembolsoId },
             data: {
-                estado: 'R', // R = Revocado
                 revokedAt: new Date(),
                 updatedAt: new Date()
             }
